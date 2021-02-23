@@ -8,7 +8,7 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 
 from flask import Flask, url_for, redirect, session, render_template, request
-
+from auth_decorator import login_required
 
 CLIENT_SECRETS_FILE = "credentials.json"
 SCOPES = ['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile',
@@ -18,6 +18,7 @@ API_VERSION = 'v1'
 
 app = Flask(__name__)
 app.secret_key = b'\x19j\xa9\x07MR8<I\x9c\x94\xc6* \xb5\xb6'
+app.config["JWT_SECRET_KEY"] = b'\x11\x049\xb8\xa2\xe1\xaa"\xe7\x92{\x15\x95]CR'
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
@@ -57,10 +58,8 @@ def oauth2callback():
 
 
 @app.route('/home')
+@login_required
 def home():
-    if 'credentials' not in session:
-        return redirect('login')
-
     credentials = Credentials(**session['credentials'])
     service = build(API_SERVICE_NAME, API_VERSION, credentials=credentials)
     results = service.people().connections().list(
@@ -69,9 +68,6 @@ def home():
         personFields='names,emailAddresses').execute()
 
     connections = filterConnections(results)
-
-    print(f"Contatos com e-mail: {connections}")
-
     return render_template('home.html.j2', name="Placeholder", connections=connections)
 
 
