@@ -7,8 +7,10 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 
-from flask import Flask, url_for, redirect, session, render_template, request
+from flask import Flask, url_for, redirect, session, request, jsonify, Response
+from flask_cors import CORS
 from auth_decorator import login_required
+
 
 CLIENT_SECRETS_FILE = "credentials.json"
 SCOPES = ['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile',
@@ -18,18 +20,21 @@ API_VERSION = 'v1'
 
 app = Flask(__name__)
 app.secret_key = b'\x19j\xa9\x07MR8<I\x9c\x94\xc6* \xb5\xb6'
-app.config["JWT_SECRET_KEY"] = b'\x11\x049\xb8\xa2\xe1\xaa"\xe7\x92{\x15\x95]CR'
+app.config.from_object(__name__)
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+CORS(app, resources={'/*': {'origins': '*'}}, headers=['Content-Type', 'Cookie'], supports_credentials=True)
 
 
 @app.route('/')
 def index():
-    return render_template('index.html.j2')
+    return Response(status=200)
 
 
 @app.route('/login')
 def login():
+    print("entrei no login")
     flow = Flow.from_client_secrets_file(CLIENT_SECRETS_FILE, scopes=SCOPES)
     flow.redirect_uri = url_for('oauth2callback', _external=True)
     authorization_url, state = flow.authorization_url(access_type='offline', include_granted_scopes='true')
@@ -40,6 +45,7 @@ def login():
 
 @app.route('/oauth2callback')
 def oauth2callback():
+    print("entrei no callback")
     state = session['state']
 
     flow = Flow.from_client_secrets_file(CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
@@ -54,10 +60,10 @@ def oauth2callback():
     credentials = flow.credentials
     session['credentials'] = credentials_to_dict(credentials)
 
-    return redirect(url_for('home'))
+    return redirect('http://localhost:8080/home')
 
 
-@app.route('/home')
+@app.route('/home', methods=['GET'])
 @login_required
 def home():
     credentials = Credentials(**session['credentials'])
@@ -68,7 +74,7 @@ def home():
         personFields='names,emailAddresses').execute()
 
     connections = filterConnections(results)
-    return render_template('home.html.j2', name="Placeholder", connections=connections)
+    return jsonify(connections)
 
 
 @app.route('/logout')
@@ -107,4 +113,4 @@ def filterConnections(results):
 
 
 if __name__ == '__main__':
-    app.run('localhost', 5000, debug=True)
+    app.run()
