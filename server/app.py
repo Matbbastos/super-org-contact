@@ -112,5 +112,15 @@ def filterConnections(results):
     return [[contact.get('names', None)[0].get('displayName', None), contact.get('emailAddresses', None)[0].get('value', None)] for contact in connections if contact.get('emailAddresses', None)]
 
 
+def combine_by_domain(connections):
+    filtered_connections = {}
+    for connection in connections:
+        domain = connection[1].split("@")[1]
+        if not filtered_connections.get(domain, False):
+            filtered_connections.update({domain: []})
+        filtered_connections.get(domain).append(connection)
+    return filtered_connections
+
+
 if __name__ == '__main__':
     app.run()
