@@ -106,7 +106,7 @@ def credentials_to_dict(credentials):
             'scopes': credentials.scopes}
 
 
-def filterConnections(results):
+def filter_connections(results):
     connections = results.get('connections', [])
 
     return [[contact.get('names', None)[0].get('displayName', None), contact.get('emailAddresses', None)[0].get('value', None)] for contact in connections if contact.get('emailAddresses', None)]
