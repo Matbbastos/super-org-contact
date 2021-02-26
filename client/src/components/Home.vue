@@ -41,9 +41,9 @@ li:nth-child(odd) {
       <h1 class="text-center">Super OrgContact</h1>
       <div class="text-center">
         <ul class="list">
-          <h2>Nome | Endereço de e-mail</h2>
-          <li v-for="item in msg" :key="item.message">
-            {{ item[0] }} | {{ item[1] }}
+          <h2>Domínio | Endereço de e-mail | Nome</h2>
+          <li v-for="(value, key) in msg" :key="value">
+            {{ key }} | {{ value }}
           </li>
         </ul>
       </div>
@@ -66,7 +66,7 @@ export default {
       const axiosWithCookies = axios.create({
         withCredentials: true
       });
-      const path = "http://localhost:5000/home";
+      const path = "http://super-org-flask.appspot.com/home";
       axiosWithCookies
         .get(path)
         .then(res => {

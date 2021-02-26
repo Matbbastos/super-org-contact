@@ -70,7 +70,7 @@ h2 {
             </h2>
             <a
               class="btn btn-lg btn-google btn-block text-uppercase btn-outline"
-              href="http://localhost:5000/login"
+              href="http://super-org-flask.appspot.com/login"
               ><img
                 src="https://img.icons8.com/color/16/000000/google-logo.png"
               />
