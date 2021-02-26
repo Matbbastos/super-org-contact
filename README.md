@@ -19,7 +19,7 @@ To enable the use of OAuth2, it is required to acquire the credentials related t
 ```bash
 cd server/
 source .venv/bin/activate
-python3.7 ./server/app.py
+python3.7 ./server/main.py
 ```
 
 ### Deploy to Google App Engine
