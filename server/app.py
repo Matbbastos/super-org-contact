@@ -60,7 +60,7 @@ def oauth2callback():
     credentials = flow.credentials
     session['credentials'] = credentials_to_dict(credentials)
 
-    return redirect('http://localhost:8080/home')
+    return redirect('https://superorgcontact-1614087097383.web.app/home')
 
 
 @app.route('/home', methods=['GET'])
@@ -73,8 +73,8 @@ def home():
         pageSize=1000,
         personFields='names,emailAddresses').execute()
 
-    connections = filterConnections(results)
-    return jsonify(connections)
+    connections = filter_connections(results)
+    return jsonify(combine_by_domain(connections))
 
 
 @app.route('/logout')
@@ -108,7 +108,6 @@ def credentials_to_dict(credentials):
 
 def filter_connections(results):
     connections = results.get('connections', [])
-
     return [[contact.get('names', None)[0].get('displayName', None), contact.get('emailAddresses', None)[0].get('value', None)] for contact in connections if contact.get('emailAddresses', None)]
 
 
