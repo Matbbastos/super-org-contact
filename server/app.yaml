@@ -1,6 +1,7 @@
 runtime: python37
 
-# handlers:
-# - url: /(login|home|logout)
-#   http_headers:
-#     Access-Control-Allow-Origin: https://superorgcontact-1614087097383.web.app/
+handlers:
+- url: /home
+  static_dir: static/
+  http_headers:
+    Access-Control-Allow-Origin: "*"

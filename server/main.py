@@ -18,6 +18,9 @@ SCOPES = ['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://w
 API_SERVICE_NAME = 'people'
 API_VERSION = 'v1'
 
+CLIENT_BASE_URL = "https://superorgcontact-1614087097383.firebaseapp.com"
+SERVER_BASE_URL = "https://super-org-flask.rj.r.appspot.com"
+
 app = Flask(__name__)
 app.secret_key = b'\x19j\xa9\x07MR8<I\x9c\x94\xc6* \xb5\xb6'
 app.config.from_object(__name__)
@@ -29,23 +32,20 @@ CORS(app, resources={'/*': {'origins': '*'}}, headers=['Content-Type', 'Cookie']
 
 @app.route('/')
 def index():
-    return Response(status=200)
+    return redirect(f"{SERVER_BASE_URL}/login")
 
 
 @app.route('/login')
 def login():
-    print("entrei no login")
     flow = Flow.from_client_secrets_file(CLIENT_SECRETS_FILE, scopes=SCOPES)
     flow.redirect_uri = url_for('oauth2callback', _external=True)
     authorization_url, state = flow.authorization_url(access_type='offline', include_granted_scopes='true')
     session['state'] = state
-
     return redirect(authorization_url)
 
 
 @app.route('/oauth2callback')
 def oauth2callback():
-    print("entrei no callback")
     state = session['state']
 
     flow = Flow.from_client_secrets_file(CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
@@ -54,24 +54,22 @@ def oauth2callback():
     authorization_response = request.url
     flow.fetch_token(authorization_response=authorization_response)
 
-    # Store credentials in the session.
-    # ACTION ITEM: In a production app, you likely want to save these
-    #              credentials in a persistent database instead.
     credentials = flow.credentials
     session['credentials'] = credentials_to_dict(credentials)
-
-    return redirect('https://superorgcontact-1614087097383.web.app/home')
+    return redirect(f"{CLIENT_BASE_URL}/home")
 
 
 @app.route('/home', methods=['GET'])
 @login_required
 def home():
-    credentials = Credentials(**session['credentials'])
+    session_credentials = session.get('credentials', 'Não há credenciais')
+    credentials = Credentials(**session_credentials)
     service = build(API_SERVICE_NAME, API_VERSION, credentials=credentials)
-    results = service.people().connections().list(
+    call = service.people().connections().list(
         resourceName='people/me',
         pageSize=1000,
-        personFields='names,emailAddresses').execute()
+        personFields='names,emailAddresses')
+    results = call.execute()
 
     connections = filter_connections(results)
     return jsonify(combine_by_domain(connections))
@@ -83,7 +81,6 @@ def logout():
         return "Não há credenciais para revogar."
 
     credentials = Credentials(**session['credentials'])
-
     revoke = requests.post('https://oauth2.googleapis.com/revoke',
                            params={'token': credentials.token},
                            headers={'content-type': 'application/x-www-form-urlencoded'})
