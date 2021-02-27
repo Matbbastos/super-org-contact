@@ -1,4 +1,6 @@
 # Super OrgContact
+![superOrgContact](https://user-images.githubusercontent.com/38052584/109373827-03d75700-7890-11eb-83fc-ae627d275427.png)
+
 This repository is intended to store the technical test, front-end and back-end, developed for Conecta Nuvem.
 
 ## Commits
